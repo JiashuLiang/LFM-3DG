@@ -1,10 +1,10 @@
-# Latent 3D Graph Diffusion
+# Latent 3D Graph Flow matching model
 
-PyTorch implementation for [Latent 3D Graph Diffusion](https://openreview.net/forum?id=cXbnGtO0NZ)
+This is a Flow matching version of the paper In ICLR 2024.
 
-Yuning You, Ruida Zhou, Jiwoong Park, Haotian Xu, Chao Tian, Zhangyang Wang, Yang Shen
+[Latent 3D Graph Diffusion](https://openreview.net/forum?id=cXbnGtO0NZ)
 
-In ICLR 2024.
+for class project of CS294-158 in UC Berkeley by Jiashu Liang
 
 License: GPL-3.0 (If you are interested in a different license, for example, for commercial use, please contact us.)
 
