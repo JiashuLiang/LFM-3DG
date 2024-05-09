@@ -18,6 +18,8 @@ from datasets import get_dataset
 from datasets.pl_data import FOLLOW_BATCH
 from models.molopt_score_model import ScorePosNet3D, LDM_Cond
 from geometric_gnn_dojo_utils.models import EGNNModel
+from models_diffusion.fm_conditional_pocket import LFM_Cond
+
 import pdb
 
 
@@ -41,6 +43,7 @@ def get_auroc(y_true, y_pred, feat_mode):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config', type=str)
+    parser.add_argument('--model', type=str, default='ldm', choices=['ldm', 'vp', 've', 'ot'])
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--logdir', type=str, default='./logs_diffusion')
     parser.add_argument('--tag', type=str, default='')
@@ -56,7 +59,7 @@ if __name__ == '__main__':
     config.train.val_freq = 1000
     config.train.optimizer.lr = 1e-4
     config.model.hidden_dim = 128
-    log_dir = misc.get_new_log_dir(args.logdir, prefix='ldm', tag=args.tag)
+    log_dir = misc.get_new_log_dir(args.logdir, prefix=args.model, tag=args.tag)
 
     # config.train.batch_size = 32
     # config.train.val_freq = 100
@@ -113,11 +116,20 @@ if __name__ == '__main__':
 
     # Model
     logger.info('Building model...')
-    model = LDM_Cond(
-        config.model,
-        protein_atom_feature_dim=protein_featurizer.feature_dim,
-        ligand_atom_feature_dim=ligand_featurizer.feature_dim
-    ).to(args.device)
+    if args.model == 'ldm':
+        model = LDM_Cond(
+            config.model,
+            protein_atom_feature_dim=protein_featurizer.feature_dim,
+            ligand_atom_feature_dim=ligand_featurizer.feature_dim
+        ).to(args.device)
+    else:
+        model = LFM_Cond(
+            config.model,
+            model_type=args.model,
+            protein_atom_feature_dim=protein_featurizer.feature_dim,
+            ligand_atom_feature_dim=ligand_featurizer.feature_dim
+        ).to(args.device)
+
     # print(model)
     print(f'protein feature dim: {protein_featurizer.feature_dim} ligand feature dim: {ligand_featurizer.feature_dim}')
     logger.info(f'# trainable parameters: {misc.count_parameters(model) / 1e6:.4f} M')

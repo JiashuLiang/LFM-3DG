@@ -18,6 +18,7 @@ from datasets import get_dataset
 from datasets.pl_data import FOLLOW_BATCH
 from models.molopt_score_model import ScorePosNet3D, LDM_Cond
 from geometric_gnn_dojo_utils.models import EGNNModel
+from models_diffusion.fm_conditional_pocket import LFM_Cond
 from tqdm import tqdm
 
 import pdb
@@ -43,10 +44,14 @@ def get_auroc(y_true, y_pred, feat_mode):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config', type=str)
+    parser.add_argument('--model', type=str, default='ldm', choices=['ldm', 'vp', 've', 'ot'])
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--logdir', type=str, default='./logs_diffusion')
     parser.add_argument('--tag', type=str, default='')
     parser.add_argument('--train_report_iter', type=int, default=200)
+    parser.add_argument('--model_path', type=str, default='../AE_geom_cond_weights_and_data/weight_diffusion.pt')
+    parser.add_argument('--data_dir', type=str, default='samples_latent')
+
     args = parser.parse_args()
 
     # Load configs
@@ -118,13 +123,22 @@ if __name__ == '__main__':
 
     # Model
     logger.info('Building model...')
-    model = LDM_Cond(
-        config.model,
-        protein_atom_feature_dim=protein_featurizer.feature_dim,
-        ligand_atom_feature_dim=ligand_featurizer.feature_dim
-    ).to(args.device)
+    if args.model == 'ldm':
+        model = LDM_Cond(
+            config.model,
+            protein_atom_feature_dim=protein_featurizer.feature_dim,
+            ligand_atom_feature_dim=ligand_featurizer.feature_dim
+        ).to(args.device)
+    else:
+        model = LFM_Cond(
+            config.model,
+            model_type=args.model,
+            protein_atom_feature_dim=protein_featurizer.feature_dim,
+            ligand_atom_feature_dim=ligand_featurizer.feature_dim
+        ).to(args.device)
 
-    model.load_state_dict(torch.load('logs_diffusion/ldm_2023_11_16__18_01_30/checkpoints/30000.pt')['model'])
+    model.load_state_dict(torch.load(args.model_path)['model'])
+        # 'logs_diffusion/ldm_2023_11_16__18_01_30/checkpoints/30000.pt')['model'])
 
     # print(model)
     print(f'protein feature dim: {protein_featurizer.feature_dim} ligand feature dim: {ligand_featurizer.feature_dim}')
@@ -148,5 +162,5 @@ if __name__ == '__main__':
 
     print(zs.shape, emb_prots.shape)
 
-    torch.save(zs, 'samples_latent/sample_z.pt')
-    torch.save(emb_prots, 'samples_latent/emb_protein.pt')
+    torch.save(zs, args.data_dir + '/sample_z.pt')
+    torch.save(emb_prots, args.data_dir + '/emb_protein.pt')

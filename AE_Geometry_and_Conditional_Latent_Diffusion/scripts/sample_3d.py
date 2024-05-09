@@ -132,6 +132,7 @@ if __name__ == '__main__':
     # parser.add_argument('-i', '--data_id', type=int)
     parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument('--input_path', type=str, default='./samples_latent')
     parser.add_argument('--result_path', type=str, default='./outputs')
     parser.add_argument('--data_id', type=int, default=0)
     args = parser.parse_args()
@@ -178,8 +179,8 @@ if __name__ == '__main__':
     from rdkit import Chem
     from datasets.protein_ligand import get_ligand_atom_features
 
-    zs = torch.load('./samples_latent/sample_z.pt')
-    smiles = torch.load('./samples_latent/sample_smiles.pt')
+    zs = torch.load(args.input_path + '/sample_z.pt')
+    smiles = torch.load(args.input_path + '/sample_smiles.pt')
     batch_size = zs.shape[1]
 
     n_batch = 5

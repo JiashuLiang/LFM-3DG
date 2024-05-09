@@ -20,13 +20,14 @@ if __name__ == '__main__':
     parser.add_argument('--ddp_num_nodes', type=int, default=1)
     # number of devices in each node for parallel training
     parser.add_argument('--ddp_device', type=int, default=1)
+    parser.add_argument('--data_dir', type=str, default='./samples_latent')
     args = parser.parse_args()
 
     print(args)
 
     device = 'cuda'
 
-    samples = torch.load('./samples_latent/sample_z.pt') # [:10000]
+    samples = torch.load( args.data_dir + '/sample_z.pt')  # [:10000]
     n1, n2, n3 = samples.shape
     samples = samples.reshape((n1*n2, n3))[:, :250]
 
@@ -49,5 +50,5 @@ if __name__ == '__main__':
             ss = model.decode(batch)
             smiles += ss
 
-    torch.save(smiles, './samples_latent/sample_smiles.pt')
+    torch.save(smiles, args.data_dir + '/sample_smiles.pt')
 
